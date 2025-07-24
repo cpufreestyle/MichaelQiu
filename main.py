@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 import re
@@ -26,16 +27,18 @@ def get_all_drives():
     import string
     from ctypes import windll
     drives = []
+    DRIVE_REMOVABLE = 2
+    DRIVE_CDROM = 5
+    DRIVE_FIXED = 3
     bitmask = windll.kernel32.GetLogicalDrives()
     for letter in string.ascii_uppercase:
         if bitmask & 1:
             drive = f'{letter}:\\'
             # 排除外置存储（如手机、U盘、SD卡等）
             try:
-                import win32file
-                drive_type = win32file.GetDriveType(drive)
+                drive_type = windll.kernel32.GetDriveTypeW(drive)
                 # 2: removable, 5: cdrom
-                if drive_type in [2, 5]:
+                if drive_type in [DRIVE_REMOVABLE, DRIVE_CDROM]:
                     bitmask >>= 1
                     continue
             except Exception:
